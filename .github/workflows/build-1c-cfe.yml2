@@ -1,0 +1,47 @@
+name: Build 1C CFE via OneScript Docker
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create output directory
+        run: mkdir -p ./output
+
+      - name: Build CFE using OneScript Docker
+        run: |
+          docker run --rm \
+            -v "$(pwd)/src:/src" \
+            -v "$(pwd)/output:/output" \
+            evilbeaver/onescript:latest \
+            opm install vrunner && \
+            vrunner compile \
+              --src /src \
+              --out /output/extension.cfe \
+              --params "Platform=8.3;BuildNumber=${GITHUB_RUN_NUMBER}"
+
+      - name: Verify CFE file
+        run: |
+          if [ ! -f "./output/extension.cfe" ]; then
+            echo "❌ CFE file was not created!"
+            ls -la ./output
+            exit 1
+          fi
+          echo "✅ CFE created successfully"
+          ls -lh ./output/extension.cfe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1C-Extension
+          path: ./output/extension.cfe
+          retention-days: 7
