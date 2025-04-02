@@ -1,4 +1,4 @@
-name: Build 1C CFE
+name: Build 1C CFE via Docker
 
 on:
   push:
@@ -14,33 +14,22 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install OneScript
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y wget unzip
-          #wget https://oscript.io/downloads/latest/x64/onescript-engine_1.6.0_all.deb
-          wget https://oscript.io/files/v1.7.0/onescript-engine_1.7.0_all.deb 
-          sudo dpkg -i onescript-engine_1.7.0_all.deb
-          sudo apt-get install -f
-          
-          #- name: Install OneScript from local
-          #run: sudo dpkg -i .tools/onescript-engine_1.7.0_all.deb
+      - name: Create output directory
+        run: mkdir -p ./output
 
-      - name: Install vrunner
+      - name: Build CFE using Docker
         run: |
-          wget https://github.com/v8platform/vrunner/releases/latest/download/vrunner-linux-x64.zip
-          unzip vrunner-linux-x64.zip -d ~/vrunner
-          echo "$HOME/vrunner" >> $GITHUB_PATH
-
-      - name: Сборка CFE
-        run: |
-          vrunner compile \
-            --src ./src \
-            --out ./output/extension.cfe \
-            --params "SomeBuildParams"
+          docker run --rm \
+            -v "$(pwd)/src:/src" \
+            -v "$(pwd)/output:/output" \
+            ghcr.io/evgenyshevchenko/onescript:latest \
+            vrunner compile \
+              --src /src \
+              --out /output/extension.cfe \
+              --params "BuildParams"
 
       - name: Upload CFE artifact
-        uses: actions/upload-artifact@v4  # <-- Исправлено на v4
+        uses: actions/upload-artifact@v4
         with:
           name: 1C-Extension
           path: ./output/extension.cfe
