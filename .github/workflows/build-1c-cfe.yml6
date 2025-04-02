@@ -1,0 +1,84 @@
+name: Build 1C CFE via Docker
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare build environment
+        run: |
+          mkdir -p ./output
+          # Создаем скрипт сборки с совместимыми функциями
+          cat > ./build.os <<EOL
+          // ===== ОСНОВНАЯ ЛОГИКА =====
+          Процедура СобратьCFE(ИсходнаяПапка, ВыходнойФайл)
+              // Создаем временный каталог
+              ВременнаяПапка = "/tmp/cfe_build_" + СтрЗаменить(Строка(ТекущаяДата()), " ", "_");
+              СоздатьКаталог(ВременнаяПапка);
+              
+              // Копируем нужные файлы
+              Файлы = НайтиФайлы(ИсходнаяПапка + "/*");
+              Для Каждого Файл Из Файлы Цикл
+                  ИмяФайла = НижнийРегистр(Файл.Имя);
+                  Если ИмяФайла = "configuration.xml" ИЛИ 
+                     Прав(ИмяФайла, 4) = ".bsl" Тогда
+                      СкопироватьФайл(Файл.ПолноеИмя, ВременнаяПапка + "/" + Файл.Имя);
+                  КонецЕсли;
+              КонецЦикла;
+              
+              // Создаем CFE (ZIP-архив)
+              ZIP = Новый ЗаписьZIPФайла(ВыходнойФайл);
+              Для Каждого Файл Из НайтиФайлы(ВременнаяПапка + "/*") Цикл
+                  ZIP.Добавить(Файл.ПолноеИмя);
+              КонецЦикла;
+              ZIP.Записать();
+          КонецПроцедуры
+
+          // ===== ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ =====
+          Процедура СкопироватьФайл(Источник, Приемник)
+              Чтение = Новый ЧтениеТекста(Источник);
+              Запись = Новый ЗаписьТекста(Приемник);
+              Запись.Записать(Чтение.Прочитать());
+              Чтение.Закрыть();
+              Запись.Закрыть();
+          КонецПроцедуры
+
+          // ===== ТОЧКА ВХОДА =====
+          Если Аргументы.Количество() < 2 Тогда
+              Вывести("Использование: oscript build.os <исходная_папка> <выходной_файл>");
+              ЗавершитьРаботу(1);
+          КонецЕсли;
+
+          СобратьCFE(Аргументы[0], Аргументы[1]);
+          EOL
+
+      - name: Build with Docker
+        run: |
+          docker run --rm \
+            -v "$(pwd)/src:/src" \
+            -v "$(pwd)/output:/output" \
+            -v "$(pwd)/build.os:/build.os" \
+            evilbeaver/onescript:1.9.2 \
+            oscript /build.os /src /output/extension.cfe
+
+      - name: Verify CFE
+        run: |
+          if [ ! -f "./output/extension.cfe" ]; then
+            echo "❌ CFE file not created!"
+            exit 1
+          fi
+          echo "✅ CFE successfully created:"
+          unzip -l ./output/extension.cfe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1C-CFE
+          path: ./output/extension.cfe
