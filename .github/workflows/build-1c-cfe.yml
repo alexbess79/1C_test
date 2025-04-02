@@ -1,4 +1,4 @@
-name: Build 1C CFE via Docker
+name: Build 1C CFE
 
 on:
   push:
@@ -12,30 +12,38 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Create output directory
-        run: mkdir -p ./output
+      - name: Setup Java (для vrunner)
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'zulu'
 
-      - name: Build CFE using vanilla 1C image
+      - name: Download vrunner
         run: |
-          docker run --rm \
-            -v "$(pwd)/src:/src" \
-            -v "$(pwd)/output:/output" \
-            ghcr.io/1c-company/edt:latest \
-            /opt/1C/v8.3/x86_64/1cv8 \
-            DESIGNER /F"/src" /DumpCfg"/output/extension.cfe" /CreateCfe
+          mkdir -p ./tools
+          wget https://github.com/v8platform/vrunner/releases/latest/download/vrunner-cli-uber.jar -O ./tools/vrunner.jar
+          echo "VRN_PATH=$(pwd)/tools" >> $GITHUB_ENV
 
-      - name: Verify CFE file
+      - name: Build CFE
+        run: |
+          mkdir -p ./output
+          java -jar $VRN_PATH/vrunner.jar compile \
+            --src ./src \
+            --out ./output/extension.cfe \
+            --params "BuildNumber=${GITHUB_RUN_NUMBER}"
+
+      - name: Verify CFE
         run: |
           if [ ! -f "./output/extension.cfe" ]; then
-            echo "❌ CFE file was not created!"
+            echo "❌ CFE file not found!"
             ls -la ./output
             exit 1
           fi
-          echo "✅ CFE created successfully"
-          ls -lh ./output/extension.cfe
+          echo "✅ CFE created: $(ls -lh ./output/extension.cfe)"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 1C-Extension
+          name: 1C-CFE
           path: ./output/extension.cfe
+          retention-days: 7
