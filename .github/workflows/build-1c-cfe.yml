@@ -1,0 +1,43 @@
+name: Build 1C CFE
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install OneScript
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y wget unzip
+          wget https://oscript.io/downloads/latest/x64/onescript-engine_1.6.0_all.deb
+          sudo dpkg -i onescript-engine_1.6.0_all.deb
+          sudo apt-get install -f
+
+      - name: Install vrunner (для сборки CFE)
+        run: |
+          wget https://github.com/v8platform/vrunner/releases/latest/download/vrunner-linux-x64.zip
+          unzip vrunner-linux-x64.zip -d ~/vrunner
+          echo "$HOME/vrunner" >> $GITHUB_PATH
+
+      - name: Сборка CFE
+        run: |
+          # Пример команды для сборки CFE через vrunner
+          vrunner compile \
+            --src ./src \
+            --out ./output/extension.cfe \
+            --params "SomeBuildParams"
+
+      - name: Upload CFE artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: 1C-Extension
+          path: ./output/extension.cfe
