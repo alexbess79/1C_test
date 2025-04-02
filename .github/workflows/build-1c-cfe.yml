@@ -12,16 +12,30 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build with custom image
+      - name: Create output directory
+        run: mkdir -p ./output
+
+      - name: Build CFE using vanilla 1C image
         run: |
           docker run --rm \
             -v "$(pwd)/src:/src" \
             -v "$(pwd)/output:/output" \
-            evilbeaver/onescript:1.9.2 \
-            oscript /src/build.os /output/extension.cfe
+            ghcr.io/1c-company/edt:latest \
+            /opt/1C/v8.3/x86_64/1cv8 \
+            DESIGNER /F"/src" /DumpCfg"/output/extension.cfe" /CreateCfe
+
+      - name: Verify CFE file
+        run: |
+          if [ ! -f "./output/extension.cfe" ]; then
+            echo "❌ CFE file was not created!"
+            ls -la ./output
+            exit 1
+          fi
+          echo "✅ CFE created successfully"
+          ls -lh ./output/extension.cfe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 1C-CFE
+          name: 1C-Extension
           path: ./output/extension.cfe

@@ -1,0 +1,27 @@
+name: Build 1C CFE via Docker
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build with custom image
+        run: |
+          docker run --rm \
+            -v "$(pwd)/src:/src" \
+            -v "$(pwd)/output:/output" \
+            evilbeaver/onescript:1.9.2 \
+            oscript /src/build.os /output/extension.cfe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1C-CFE
+          path: ./output/extension.cfe
