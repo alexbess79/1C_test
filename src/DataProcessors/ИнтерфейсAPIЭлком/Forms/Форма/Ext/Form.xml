@@ -1,0 +1,168 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Form xmlns="http://v8.1c.ru/8.3/xcf/logform" xmlns:app="http://v8.1c.ru/8.2/managed-application/core" xmlns:cfg="http://v8.1c.ru/8.1/data/enterprise/current-config" xmlns:dcscor="http://v8.1c.ru/8.1/data-composition-system/core" xmlns:dcssch="http://v8.1c.ru/8.1/data-composition-system/schema" xmlns:dcsset="http://v8.1c.ru/8.1/data-composition-system/settings" xmlns:ent="http://v8.1c.ru/8.1/data/enterprise" xmlns:lf="http://v8.1c.ru/8.2/managed-application/logform" xmlns:style="http://v8.1c.ru/8.1/data/ui/style" xmlns:sys="http://v8.1c.ru/8.1/data/ui/fonts/system" xmlns:v8="http://v8.1c.ru/8.1/data/core" xmlns:v8ui="http://v8.1c.ru/8.1/data/ui" xmlns:web="http://v8.1c.ru/8.1/data/ui/colors/web" xmlns:win="http://v8.1c.ru/8.1/data/ui/colors/windows" xmlns:xr="http://v8.1c.ru/8.3/xcf/readable" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" version="2.18">
+	<AutoSaveDataInSettings>Use</AutoSaveDataInSettings>
+	<AutoCommandBar name="ФормаКоманднаяПанель" id="-1"/>
+	<ChildItems>
+		<Pages name="Каталог" id="7">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Каталог</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Каталог</v8:content>
+				</v8:item>
+			</ToolTip>
+			<ExtendedTooltip name="КаталогРасширеннаяПодсказка" id="8"/>
+			<ChildItems>
+				<Page name="ПолучитьКаталог" id="9">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Получить каталог</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Получить каталог</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="ПолучитьКаталогРасширеннаяПодсказка" id="10"/>
+					<ChildItems>
+						<Button name="ПроверитьНаличиеДопСвойства" id="14">
+							<Type>UsualButton</Type>
+							<CommandName>Form.Command.ПроверитьНаличиеДопСвойства</CommandName>
+							<ExtendedTooltip name="ПроверитьНаличиеДопСвойстваРасширеннаяПодсказка" id="15"/>
+						</Button>
+						<InputField name="ВладелецКаталога" id="11">
+							<DataPath>ВладелецКаталога</DataPath>
+							<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+							<ContextMenu name="ВладелецКаталогаКонтекстноеМеню" id="12"/>
+							<ExtendedTooltip name="ВладелецКаталогаРасширеннаяПодсказка" id="13"/>
+						</InputField>
+						<Button name="ПолучитьОбновитьКаталог" id="16">
+							<Type>UsualButton</Type>
+							<CommandName>Form.Command.ПолучитьОбновитьКаталог</CommandName>
+							<ExtendedTooltip name="ПолучитьОбновитьКаталогРасширеннаяПодсказка" id="17"/>
+						</Button>
+					</ChildItems>
+				</Page>
+				<Page name="ПолучитьЦены" id="18">
+					<Title>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Получить цены</v8:content>
+						</v8:item>
+					</Title>
+					<ToolTip>
+						<v8:item>
+							<v8:lang>ru</v8:lang>
+							<v8:content>Получить цены</v8:content>
+						</v8:item>
+					</ToolTip>
+					<ExtendedTooltip name="ПолучитьЦеныРасширеннаяПодсказка" id="19"/>
+					<ChildItems>
+						<Button name="ПолучитьЦеныТоваров" id="20">
+							<Type>UsualButton</Type>
+							<CommandName>Form.Command.ПолучитьЦеныТоваров</CommandName>
+							<ExtendedTooltip name="ПолучитьЦеныТоваровРасширеннаяПодсказка" id="21"/>
+						</Button>
+						<InputField name="СсылкаНаТовар" id="22">
+							<DataPath>СсылкаНаТовар</DataPath>
+							<ExtendedEditMultipleValues>true</ExtendedEditMultipleValues>
+							<ContextMenu name="СсылкаНаТоварКонтекстноеМеню" id="23"/>
+							<ExtendedTooltip name="СсылкаНаТоварРасширеннаяПодсказка" id="24"/>
+						</InputField>
+					</ChildItems>
+				</Page>
+			</ChildItems>
+		</Pages>
+	</ChildItems>
+	<Attributes>
+		<Attribute name="Объект" id="1">
+			<Type>
+				<v8:Type>cfg:DataProcessorObject.ИнтерфейсAPIЭлком</v8:Type>
+			</Type>
+			<MainAttribute>true</MainAttribute>
+		</Attribute>
+		<Attribute name="ВладелецКаталога" id="4">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Владелец каталога</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>cfg:CatalogRef.Партнеры</v8:Type>
+			</Type>
+			<Save>
+				<Field>ВладелецКаталога</Field>
+			</Save>
+		</Attribute>
+		<Attribute name="СсылкаНаТовар" id="5">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Ссылка на товар</v8:content>
+				</v8:item>
+			</Title>
+			<Type>
+				<v8:Type>cfg:CatalogRef.Номенклатура</v8:Type>
+			</Type>
+			<Save>
+				<Field>СсылкаНаТовар</Field>
+			</Save>
+		</Attribute>
+	</Attributes>
+	<Commands>
+		<Command name="ПолучитьОбновитьКаталог" id="4">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить обновить каталог</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить обновить каталог</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьОбновитьКаталог</Action>
+		</Command>
+		<Command name="ПроверитьНаличиеДопСвойства" id="5">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Проверить наличие доп свойства</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Проверить наличие доп свойства</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПроверитьНаличиеДопСвойства</Action>
+		</Command>
+		<Command name="ПолучитьЦеныТоваров" id="1">
+			<Title>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить цены товаров</v8:content>
+				</v8:item>
+			</Title>
+			<ToolTip>
+				<v8:item>
+					<v8:lang>ru</v8:lang>
+					<v8:content>Получить цены товаров</v8:content>
+				</v8:item>
+			</ToolTip>
+			<Action>ПолучитьЦеныТоваров</Action>
+		</Command>
+	</Commands>
+</Form>
