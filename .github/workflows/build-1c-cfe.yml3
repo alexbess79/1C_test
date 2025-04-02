@@ -1,0 +1,31 @@
+name: Build 1C CFE via EDT
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    container:
+      image: ghcr.io/1c-company/edt-runner:latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Build CFE
+        run: |
+          mkdir -p ./output
+          edt build \
+            --project ./src \
+            --output ./output/extension.cfe \
+            --format cfe
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1C-Extension
+          path: ./output/extension.cfe

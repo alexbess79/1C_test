@@ -1,31 +1,27 @@
-name: Build 1C CFE via EDT
+name: Build 1C CFE via Docker
 
 on:
   push:
-    branches: [ main ]
-  pull_request:
     branches: [ main ]
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: ghcr.io/1c-company/edt-runner:latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Build CFE
+      - name: Build with custom image
         run: |
-          mkdir -p ./output
-          edt build \
-            --project ./src \
-            --output ./output/extension.cfe \
-            --format cfe
+          docker run --rm \
+            -v "$(pwd)/src:/src" \
+            -v "$(pwd)/output:/output" \
+            evilbeaver/onescript:1.7.0 \
+            oscript /src/build.os /output/extension.cfe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: 1C-Extension
+          name: 1C-CFE
           path: ./output/extension.cfe
