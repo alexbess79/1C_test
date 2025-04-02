@@ -18,11 +18,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y wget unzip
-          #          wget https://oscript.io/downloads/latest/x64/onescript-engine_1.6.0_all.deb
-          #          sudo dpkg -i onescript-engine_1.6.0_all.deb
-          #          sudo apt-get install -f
+          #wget https://oscript.io/downloads/latest/x64/onescript-engine_1.6.0_all.deb
+          #wget https://oscript.io/files/v1.7.0/onescript-engine_1.7.0_all.deb 
+          #sudo dpkg -i onescript-engine_1.7.0_all.deb
+          #sudo apt-get install -f
       - name: Install OneScript from local
-        run: sudo dpkg -i .tools/onescript-engine_1.6.0_all.deb
+        run: sudo dpkg -i .tools/onescript-engine_1.7.0_all.deb
 
       - name: Install vrunner
         run: |
