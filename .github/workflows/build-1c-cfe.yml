@@ -1,4 +1,4 @@
-name: Build 1C CFE
+name: Build 1C CFE via Docker
 
 on:
   push:
@@ -12,38 +12,76 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Java (для vrunner)
-        uses: actions/setup-java@v3
-        with:
-          java-version: '11'
-          distribution: 'zulu'
-
-      - name: Download vrunner
-        run: |
-          mkdir -p ./tools
-          wget https://github.com/v8platform/vrunner/releases/latest/download/vrunner-cli-uber.jar -O ./tools/vrunner.jar
-          echo "VRN_PATH=$(pwd)/tools" >> $GITHUB_ENV
-
-      - name: Build CFE
+      - name: Prepare build environment
         run: |
           mkdir -p ./output
-          java -jar $VRN_PATH/vrunner.jar compile \
-            --src ./src \
-            --out ./output/extension.cfe \
-            --params "BuildNumber=${GITHUB_RUN_NUMBER}"
+          # Создаем скрипт сборки
+          cat > ./build.os <<EOL
+          Перем ИсходнаяПапка, ВыходнойФайл;
+
+          // Получаем параметры
+          Если КоличествоАргументовКоманднойСтроки() < 2 Тогда
+              ВызватьИсключение "Необходимо указать: исходную_папку выходной_файл";
+          КонецЕсли;
+
+          ИсходнаяПапка = АргументыКоманднойСтроки[0];
+          ВыходнойФайл = АргументыКоманднойСтроки[1];
+
+          // Проверяем структуру
+          Если Не ФС.КаталогСуществует(ИсходнаяПапка) Тогда
+              ВызватьИсключение "Исходная папка не существует: " + ИсходнаяПапка;
+          КонецЕсли;
+
+          // Создаем временную папку
+          ВременнаяПапка = "/tmp/cfe_build_" + Строка(ТекущаяДата());
+          ФС.ОбеспечитьКаталог(ВременнаяПапка);
+
+          // Копируем только нужные файлы
+          КопироватьФайлы(ИсходнаяПапка, ВременнаяПапка);
+
+          // Упаковываем в CFE (ZIP-архив)
+          ЗаписьZIP = Новый ЗаписьZIPФайла(ВыходнойФайл);
+          Для Каждого Файл Из ФС.НайтиФайлы(ВременнаяПапка + "/*") Цикл
+              ЗаписьZIP.Добавить(Файл.ПолноеИмя);
+          КонецЦикла;
+          ЗаписьZIP.Записать();
+
+          Процедура КопироватьФайлы(Источник, Приемник)
+              Для Каждого Элемент Из ФС.НайтиФайлы(Источник + "/*") Цикл
+                  Если ФС.ЭтоКаталог(Элемент.ПолноеИмя) Тогда
+                      Продолжить;
+                  КонецЕсли;
+
+                  Если НРег(Элемент.Имя) = "configuration.xml" ИЛИ 
+                     НРег(Прав(Элемент.Имя, 4)) = ".bsl" Тогда
+                      ФС.КопироватьФайл(
+                          Элемент.ПолноеИмя, 
+                          Приемник + "/" + Элемент.Имя
+                      );
+                  КонецЕсли;
+              КонецЦикла;
+          КонецПроцедуры
+          EOL
+
+      - name: Build with Docker
+        run: |
+          docker run --rm \
+            -v "$(pwd)/src:/src" \
+            -v "$(pwd)/output:/output" \
+            -v "$(pwd)/build.os:/build.os" \
+            evilbeaver/onescript:1.9.2 \
+            oscript /build.os /src /output/extension.cfe
 
       - name: Verify CFE
         run: |
           if [ ! -f "./output/extension.cfe" ]; then
-            echo "❌ CFE file not found!"
-            ls -la ./output
+            echo "❌ CFE file not created!"
             exit 1
           fi
-          echo "✅ CFE created: $(ls -lh ./output/extension.cfe)"
+          echo "✅ CFE size: $(du -h ./output/extension.cfe | cut -f1)"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: 1C-CFE
           path: ./output/extension.cfe
-          retention-days: 7
