@@ -1,4 +1,4 @@
-name: Internal Output CI/CD
+name: V8Unpack Processing Pipeline
 
 on:
   push:
@@ -6,38 +6,51 @@ on:
   workflow_dispatch:
 
 jobs:
-  process-files:
+  process-cfe:
     runs-on: windows-latest
     
     steps:
     - name: Checkout code with full history
       uses: actions/checkout@v4
       with:
-        fetch-depth: 0  # Чтобы можно было пушить изменения обратно
+        fetch-depth: 0  # Для возможности пушить изменения обратно
     
-    - name: Create out directory if needed
-      run: mkdir -Force out
-      shell: pwsh
-      
-    - name: Move specified file
+    - name: Create directories
       run: |
-        $sourceFile = "src/test.txt"  # Укажите ваш файл
-        $destFile = "out/test_moved.txt"     # Можно изменить имя
+        mkdir -Force out
+        mkdir -Force tools
+      shell: pwsh
         
-        if (Test-Path $sourceFile) {
-          Move-Item -Path $sourceFile -Destination $destFile -Force
-          Write-Host "File moved to repository's out directory"
-        } else {
-          Write-Host "Error: Source file not found!"
+    - name: Build v8unpack
+      run: |
+        cd v8unpack
+        call build_local.cmd
+      shell: cmd
+      
+    - name: Run v8unpack processing
+      run: |
+        $v8unpackPath = "tools/v8unpack.exe"
+        $sourceFile = "src/АнализЦенПоставщиковПоAPI_1_0_5_1.cfe"
+        $outputDir = "out"
+        
+        # Копируем собранный v8unpack в tools
+        Copy-Item -Path "v8unpack/bin/v8unpack.exe" -Destination $v8unpackPath -Force
+        
+        # Выполняем распаковку
+        & $v8unpackPath -E $sourceFile $outputDir
+        
+        # Проверяем результат
+        if (-not (Test-Path "$outputDir/*")) {
+          Write-Host "Error: No output files generated!"
           exit 1
         }
       shell: pwsh
       
-    - name: Commit and push changes
+    - name: Commit and push results
       run: |
         git config --global user.name "GitHub Actions"
         git config --global user.email "actions@github.com"
         git add out/
-        git commit -m "CI: Moved processed file to out directory"
+        git commit -m "CI: Processed CFE file via v8unpack"
         git push
       shell: pwsh
