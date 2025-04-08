@@ -18,8 +18,8 @@ jobs:
       
     - name: Move specified file
       run: |
-        $sourceFile = "src/text.txt"  # Замените на имя вашего файла
-        $destination = "out/text_moved.txt"  # Можно изменить имя при необходимости
+        $sourceFile = "src/test.txt"  # Замените на имя вашего файла
+        $destination = "out/test_moved.txt"  # Можно изменить имя при необходимости
         
         if (Test-Path $sourceFile) {
           Move-Item -Path $sourceFile -Destination $destination -Force
