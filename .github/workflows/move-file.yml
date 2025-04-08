@@ -42,7 +42,8 @@ jobs:
         
         # Выполняем распаковку
         #& $v8unpackPath -E $sourceFile $outputDir
-        & $v8unpackPath -unpack $sourceFile $outputDir
+        & $v8unpackPath
+        # -unpack $sourceFile $outputDir
         
         # Проверяем результат
         if (-not (Test-Path "$outputDir/*")) {
