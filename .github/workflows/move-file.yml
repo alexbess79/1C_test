@@ -1,4 +1,4 @@
-name: Simple File Move CI/CD
+name: Internal Output CI/CD
 
 on:
   push:
@@ -6,32 +6,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  move-file:
+  process-files:
     runs-on: windows-latest
     
     steps:
-    - name: Checkout code
+    - name: Checkout code with full history
       uses: actions/checkout@v4
-      
-    - name: Create out directory if not exists
+      with:
+        fetch-depth: 0  # Чтобы можно было пушить изменения обратно
+    
+    - name: Create out directory if needed
       run: mkdir -Force out
+      shell: pwsh
       
     - name: Move specified file
       run: |
-        $sourceFile = "src/test.txt"  # Замените на имя вашего файла
-        $destination = "out/test_moved.txt"  # Можно изменить имя при необходимости
+        $sourceFile = "src/test.txt"  # Укажите ваш файл
+        $destFile = "out/test_moved.txt"     # Можно изменить имя
         
         if (Test-Path $sourceFile) {
-          Move-Item -Path $sourceFile -Destination $destination -Force
-          Write-Host "File moved successfully from $sourceFile to $destination"
+          Move-Item -Path $sourceFile -Destination $destFile -Force
+          Write-Host "File moved to repository's out directory"
         } else {
-          Write-Host "Error: Source file $sourceFile not found!"
+          Write-Host "Error: Source file not found!"
           exit 1
         }
       shell: pwsh
       
-    - name: Upload out directory as artifact (optional)
-      uses: actions/upload-artifact@v4
-      with:
-        name: output-files
-        path: out/
+    - name: Commit and push changes
+      run: |
+        git config --global user.name "GitHub Actions"
+        git config --global user.email "actions@github.com"
+        git add out/
+        git commit -m "CI: Moved processed file to out directory"
+        git push
+      shell: pwsh
