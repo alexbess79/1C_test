@@ -30,7 +30,7 @@ jobs:
     - name: Run v8unpack processing
       run: |
         $v8unpackPath = "tools/v8unpack.exe"
-        $sourceFile = "src/АнализЦенПоставщиковПоAPI_1_0_5_1.cfe"
+        $sourceFile = "src/test.cfe"
         $outputDir = "out"
         
         # Копируем собранный v8unpack в tools
