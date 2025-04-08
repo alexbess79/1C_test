@@ -1,0 +1,58 @@
+name: Build 1C CFE via Docker
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Prepare environment
+        run: mkdir -p ./output
+
+      - name: Debug project structure
+        run: |
+          echo "┌──────────────────────────────┐"
+          echo "│ Проверка структуры проекта   │"
+          echo "├──────────────────────────────┤"
+          find src -type f | grep -E "\.bsl$|Configuration\.xml" || echo "  ❌ Нет файлов .bsl или Configuration.xml"
+          echo "└──────────────────────────────┘"
+
+      - name: Build with Docker
+        run: |
+          docker run --rm \
+            -v "$(pwd):/workspace" \
+            -w /workspace \
+            evilbeaver/onescript:1.9.2 \
+            oscript /workspace/build.os
+
+      - name: Verify CFE
+        run: |
+          if [ -s "./output/extension.cfe" ]; then
+            echo "✅ CFE успешно создан!"
+            echo "┌───────────────────────┐"
+            echo "│ Содержимое архива:    │"
+            echo "├───────────────────────┤"
+            unzip -l ./output/extension.cfe | awk 'NR>3 && NF>3 {printf "│ %-21s │\n", $4}'
+            echo "└───────────────────────┘"
+            exit 0
+          else
+            echo "❌ Ошибка: CFE не создан"
+            echo "Проверьте:"
+            echo "1. Наличие build.os в корне проекта"
+            echo "2. Существование файлов .bsl или Configuration.xml в src/"
+            echo "3. Права на запись в папку output"
+            exit 1
+          fi
+
+      - name: Upload artifact
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: 1C-CFE
+          path: ./output/extension.cfe

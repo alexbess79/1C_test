@@ -1,0 +1,37 @@
+name: Simple File Move CI/CD
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  move-file:
+    runs-on: windows-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Create out directory if not exists
+      run: mkdir -Force out
+      
+    - name: Move specified file
+      run: |
+        $sourceFile = "src/text.txt"  # Замените на имя вашего файла
+        $destination = "out/text_moved.txt"  # Можно изменить имя при необходимости
+        
+        if (Test-Path $sourceFile) {
+          Move-Item -Path $sourceFile -Destination $destination -Force
+          Write-Host "File moved successfully from $sourceFile to $destination"
+        } else {
+          Write-Host "Error: Source file $sourceFile not found!"
+          exit 1
+        }
+      shell: pwsh
+      
+    - name: Upload out directory as artifact (optional)
+      uses: actions/upload-artifact@v3
+      with:
+        name: output-files
+        path: out/
